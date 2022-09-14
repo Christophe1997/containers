@@ -25,3 +25,9 @@ type Collection[E comparable] interface {
 	Remove(e ...E)
 	RemoveWith(cmp func(lhs, rhs E) bool, e ...E)
 }
+
+func Copy[E comparable](dest Collection[E], src Collection[E]) {
+	src.ForEach(func(e E) {
+		dest.Add(e)
+	})
+}
