@@ -1,11 +1,18 @@
 package containers
 
+import (
+	"fmt"
+	"strings"
+)
+
 type List[E comparable] interface {
 	Collection[E]
+	fmt.Stringer
 	Index(e E) (int, bool)
 	IndexWith(cmp func(lhs, rhs E) bool, e E) (int, bool)
 	Get(idx int) E
 	Set(idx int, e E)
+	ToArray() []E
 }
 
 type LinkedList[E comparable] interface {
@@ -49,7 +56,7 @@ type linkedListIterator[E comparable] struct {
 }
 
 func (it *linkedListIterator[E]) HasNext() bool {
-	return it.cur != it.data.tail
+	return it.cur.next != it.data.tail
 }
 
 func (it *linkedListIterator[E]) Next() E {
@@ -123,6 +130,14 @@ func (ls *linkedList[E]) RemoveWith(cmp func(lhs, rhs E) bool, e ...E) {
 	}
 }
 
+func (ls *linkedList[E]) String() string {
+	res := Fmap(func(e E) string {
+		return fmt.Sprintf("%+v", e)
+	})(ls)
+	arr := res.ToArray()
+	return fmt.Sprintf("[%s]", strings.Join(arr, ", "))
+}
+
 func (ls *linkedList[E]) Index(e E) (int, bool) {
 	return ls.IndexWith(func(lhs, rhs E) bool { return lhs == rhs }, e)
 }
@@ -166,6 +181,16 @@ func (ls *linkedList[E]) Set(idx int, e E) {
 		}
 	}
 	panic("Out of bound")
+}
+
+func (ls *linkedList[E]) ToArray() []E {
+	res := make([]E, ls.Size())
+	idx := 0
+	ls.ForEach(func(e E) {
+		res[idx] = e
+		idx++
+	})
+	return res
 }
 
 func (ls *linkedList[E]) Front() E {

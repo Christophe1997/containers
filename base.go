@@ -31,3 +31,13 @@ func Copy[E comparable](dest Collection[E], src Collection[E]) {
 		dest.Add(e)
 	})
 }
+
+func Fmap[A comparable, B comparable](f func(a A) B) func(ls List[A]) List[B] {
+	return func(ls List[A]) List[B] {
+		res := NewLinkedList[B]()
+		ls.ForEach(func(a A) {
+			res.Add(f(a))
+		})
+		return res
+	}
+}
