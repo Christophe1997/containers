@@ -105,11 +105,12 @@ func (ls *linkedList[E]) Remove(e ...E) {
 	for _, v := range e {
 		cur := ls.head.next
 		for cur != ls.tail {
-			if cur.val == v {
-				temp := cur
-				cur = cur.next
+			temp := cur
+			cur = cur.next
+			if temp.val == v {
 				ls.remove(temp)
 			}
+
 		}
 	}
 }
@@ -121,9 +122,9 @@ func (ls *linkedList[E]) RemoveWith(cmp func(lhs, rhs E) bool, e ...E) {
 	for _, v := range e {
 		cur := ls.head.next
 		for cur != ls.tail {
-			if cmp(cur.val, v) {
-				temp := cur
-				cur = cur.next
+			temp := cur
+			cur = cur.next
+			if cmp(temp.val, v) {
 				ls.remove(temp)
 			}
 		}
@@ -175,6 +176,7 @@ func (ls *linkedList[E]) Set(idx int, e E) {
 		for cur != ls.tail {
 			if idx == 0 {
 				cur.val = e
+				return
 			}
 			cur = cur.next
 			idx--
