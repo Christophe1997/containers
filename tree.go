@@ -8,10 +8,9 @@ package containers
 // All leaf nodes are black nodes.
 type RBTree[E comparable] interface {
 	Sized
-	Search(cmp func(lhs E, rhs E) int, e E) (E, bool)
-	Insert(cmp func(lhs E, rhs E) int, e ...E) RBTree[E]
+	SearchWith(cmp func(lhs E, rhs E) int, e E) (E, bool)
+	InsertWith(cmp func(lhs E, rhs E) int, e ...E) RBTree[E]
 	Height() int
-	debug() bool
 }
 
 type treeNode[E comparable] struct {
@@ -39,7 +38,7 @@ func (t *rbTree[E]) Size() int {
 	return t.size
 }
 
-func (t *rbTree[E]) Search(cmp func(lhs E, rhs E) int, e E) (E, bool) {
+func (t *rbTree[E]) SearchWith(cmp func(lhs E, rhs E) int, e E) (E, bool) {
 	var res E
 	cur := t.root
 	for cur != nil {
@@ -55,7 +54,7 @@ func (t *rbTree[E]) Search(cmp func(lhs E, rhs E) int, e E) (E, bool) {
 	return res, false
 }
 
-func (t *rbTree[E]) Insert(cmp func(lhs, rhs E) int, e ...E) RBTree[E] {
+func (t *rbTree[E]) InsertWith(cmp func(lhs, rhs E) int, e ...E) RBTree[E] {
 	res := t
 	for _, v := range e {
 		res = res.insert(cmp, v)
@@ -115,14 +114,14 @@ func (t *treeNode[E]) leaves() []*treeNode[E] {
 	queue.Enqueue(t)
 	var (
 		curNode *treeNode[E]
-		res     = NewLinkedList[*treeNode[E]]()
+		res     = make([]*treeNode[E], 0)
 	)
 	for !queue.IsEmpty() {
 		size := queue.Size()
 		for idx := 0; idx < size; idx++ {
 			queue, curNode = queue.Dequeue()
 			if curNode.left == nil && curNode.right == nil {
-				res.Add(curNode)
+				res = append(res, curNode)
 			}
 			if curNode.left != nil {
 				queue.Enqueue(curNode.left)
@@ -132,7 +131,7 @@ func (t *treeNode[E]) leaves() []*treeNode[E] {
 			}
 		}
 	}
-	return res.ToArray()
+	return res
 }
 
 // There are no two adjacent red nodes (A red node cannot have a red parent or red child).
@@ -196,10 +195,10 @@ func (t *rbTree[E]) insert(cmp func(lhs, rhs E) int, e E) *rbTree[E] {
 			cur = cur.right
 		}
 	}
-	if parent.left == cur {
-		parent.left = res
-	} else {
+	if cmp(e, parent.val) > 0 {
 		parent.right = res
+	} else {
+		parent.left = res
 	}
 	res.parent = parent
 
