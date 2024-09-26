@@ -1,29 +1,32 @@
 package containers
 
-type Queue[E comparable] interface {
-	Sized
+import "iter"
 
+type Queue[E any] interface {
+	SizedSeq[E]
 	Enqueue(e E) Queue[E]
 	Dequeue() (Queue[E], E)
 	Peek() E
-
-	ToList() List[E]
 }
 
-type queue[E comparable] struct {
-	data LinkedList[E]
+type queue[E Elem] struct {
+	data *linkedList[E]
 }
 
-func NewQueue[E comparable]() Queue[E] {
-	return &queue[E]{data: NewLinkedList[E]()}
+func (q *queue[E]) All() (seq iter.Seq2[int, E]) {
+	return q.data.All()
+}
+
+func (q *queue[E]) Values() (seq iter.Seq[E]) {
+	return q.data.Values()
+}
+
+func NewQueue[E Elem]() Queue[E] {
+	return &queue[E]{data: newLinkedList[E]()}
 }
 
 func (q *queue[E]) Size() int {
 	return q.data.Size()
-}
-
-func (q *queue[E]) IsEmpty() bool {
-	return q.data.IsEmpty()
 }
 
 func (q *queue[E]) Enqueue(e E) Queue[E] {
@@ -39,10 +42,4 @@ func (q *queue[E]) Dequeue() (Queue[E], E) {
 
 func (q *queue[E]) Peek() E {
 	return q.data.Front()
-}
-
-func (q *queue[E]) ToList() List[E] {
-	res := NewLinkedList[E]()
-	Copy[E](res, q.data)
-	return res
 }

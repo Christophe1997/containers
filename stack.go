@@ -1,25 +1,40 @@
 package containers
 
-type Stack[E comparable] interface {
-	Sized
+import "iter"
 
+type Stack[E Elem] interface {
+	SizedSeq[E]
 	Pop() (Stack[E], E)
 	Push(e E) Stack[E]
 	Peek() E
-
-	ToList() List[E]
 }
 
-type stack[E comparable] struct {
-	data LinkedList[E]
+type stack[E Elem] struct {
+	data *linkedList[E]
 }
 
-func NewStack[E comparable]() Stack[E] {
-	return &stack[E]{data: NewLinkedList[E]()}
+func (s *stack[E]) All() (seq iter.Seq2[int, E]) {
+	return ConvertSeq2(s.Values())
+}
+
+func (s *stack[E]) Values() (seq iter.Seq[E]) {
+	return func(yield func(E) bool) {
+		cur := s.data.tail.prev
+		for cur != s.data.head {
+			if !yield(cur.val) {
+				return
+			}
+			cur = cur.prev
+		}
+	}
+}
+
+func NewStack[E Elem]() Stack[E] {
+	return &stack[E]{data: newLinkedList[E]()}
 }
 
 func (s *stack[E]) Pop() (Stack[E], E) {
-	if s.IsEmpty() {
+	if s.Size() == 0 {
 		panic("Empty Stack")
 	} else {
 		res := s.Peek()
@@ -39,14 +54,4 @@ func (s *stack[E]) Peek() E {
 
 func (s *stack[E]) Size() int {
 	return s.data.Size()
-}
-
-func (s *stack[E]) IsEmpty() bool {
-	return s.data.IsEmpty()
-}
-
-func (s *stack[E]) ToList() List[E] {
-	res := NewLinkedList[E]()
-	Copy[E](res, s.data)
-	return res
 }
