@@ -1,4 +1,4 @@
-package containers
+package lisq
 
 type Set[E comparable] interface {
 	Union(other Set[E]) Set[E]
